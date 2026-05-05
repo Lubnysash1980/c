@@ -1,0 +1,62 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+# CYBRA EVOLUTION IMPORT SYSTEM
+
+INDEX_FILE=".cybra_index"
+
+build_index() {
+    echo "🧠 Building module index..."
+
+    rm -f "$INDEX_FILE"
+
+    find . -type f -name "*.js" -o -name "*.mjs" -o -name "*.sh" | while read file; do
+
+        tags="GENERIC"
+
+        case "$file" in
+            *bot*) tags="[AI][BOT]" ;;
+            *api*) tags="[CORE][API]" ;;
+            *nfc*) tags="[DEVICE][NFC]" ;;
+            *pay*|*kyber*) tags="[FIN][PAYMENT]" ;;
+            *crypto*|*trade*) tags="[FIN][TRADING]" ;;
+        esac
+
+        echo "$file $tags" >> "$INDEX_FILE"
+    done
+
+    echo "✅ Index built"
+}
+
+import_mode() {
+    echo "🚀 CYBRA EVOLUTION IMPORT"
+
+    build_index
+
+    echo ""
+    echo "📦 Module map:"
+    cat "$INDEX_FILE"
+
+    git add .
+
+    if git diff --cached --quiet; then
+        echo "⚠️ Nothing to import"
+        exit 0
+    fi
+
+    git commit -m "evolution import: smart module snapshot"
+    git push origin main
+
+    echo "✅ Evolution import done"
+}
+
+case "$1" in
+    import)
+        import_mode
+        ;;
+    index)
+        build_index
+        ;;
+    *)
+        echo "cybra-evo import | index"
+        ;;
+esac
