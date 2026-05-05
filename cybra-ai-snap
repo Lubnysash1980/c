@@ -1,0 +1,60 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+# CYBRA AI SNAPSHOT MODE v4
+
+STATE_FILE=".cybra_state"
+DETAIL_FILE=".cybra_last_diff"
+
+IGNORE="node_modules .git *.log *.tmp"
+
+get_hash() {
+    find . -type f \
+    $(for i in $IGNORE; do echo "! -path './$i/*'"; done) \
+    -exec sha256sum {} \; 2>/dev/null | sha256sum | awk '{print $1}'
+}
+
+describe_changes() {
+    echo "📊 Change analysis:"
+
+    git diff --cached --name-status | while read status file; do
+        case "$status" in
+            A) echo "➕ added: $file" ;;
+            M) echo "✏️ modified: $file" ;;
+            D) echo "❌ deleted: $file" ;;
+        esac
+    done
+}
+
+CURRENT_HASH=$(get_hash)
+LAST_HASH=""
+
+[ -f "$STATE_FILE" ] && LAST_HASH=$(cat "$STATE_FILE")
+
+if [ "$CURRENT_HASH" == "$LAST_HASH" ]; then
+    echo "⚠️ AI SNAPSHOT: no structural changes detected"
+    exit 0
+fi
+
+echo "🧠 AI SNAPSHOT MODE ACTIVE"
+
+git add .
+
+if git diff --cached --quiet; then
+    echo "⚠️ nothing to snapshot"
+    exit 0
+fi
+
+describe_changes > "$DETAIL_FILE"
+
+echo "🧾 Snapshot details:"
+cat "$DETAIL_FILE"
+
+COMMIT_MSG="ai-snapshot: $CURRENT_HASH"
+
+git commit -m "$COMMIT_MSG"
+
+echo "$CURRENT_HASH" > "$STATE_FILE"
+
+git push origin main
+
+echo "✅ AI SNAPSHOT SAVED"
