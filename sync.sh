@@ -1,11 +1,16 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
-echo "🚀 Sync starting..."
+echo "🚀 Smart sync..."
 
 git add .
 
-git commit -m "auto sync: $(date '+%Y-%m-%d %H:%M:%S')" || echo "no changes to commit"
+if git diff --cached --quiet; then
+  echo "⚠️ No changes"
+  exit 0
+fi
+
+git commit -m "auto sync $(date '+%H:%M:%S')"
 
 git push origin main
 
-echo "✅ Sync done"
+echo "✅ Done"
