@@ -1,0 +1,64 @@
+# 1. Завантаження архіву з GitHub
+wget -O cybra_system.zip 'https://github.com/lubnysash1980/cybra_system/releases/latest/download/cybra_system.zip'
+
+# 2. Розпакування
+unzip cybra_system.zip && cd cybra_system
+
+# 3. Інсталяція та запуск
+bash install.sh && bash start.sh && nohup bash restart.sh > logs/restart.log 2>&1 &
+
+source venv/bin/activate
+pip install fastapi uvicorn pydantic
+
+pkg install redis ffmpeg
+
+
+
+npm install express body-parser redis @octokit/rest jimp fluent-ffmpeg
+
+
+redis-server
+
+pkill redis-server
+redis-server --daemonize yes
+
+
+cyberparlament.mjs
+
+
+
+curl http://localhost:3000/menu
+
+
+
+curl -X POST http://localhost:3000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"user":"alex","message":"Привіт, парламент!"}'
+  
+  
+  
+  curl -X POST http://localhost:3000/vote \
+  -H "Content-Type: application/json" \
+  -d '{"user":"alex","option":"За"}'
+  
+  
+  curl http://localhost:3000/results
+  
+  
+  curl -X POST http://localhost:3000/task \
+  -H "Content-Type: application/json" \
+  -d '{"type":"image","payload":{"description":"Молодий воїн у ведмежій шкурі"}}'
+  
+  
+  
+  curl -X POST http://localhost:3000/image \
+  -H "Content-Type: application/json" \
+  -d '{"description":"Молодий воїн у ведмежій шкурі"}'
+  
+  
+  curl -X POST http://localhost:3000/video \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Презентація парламенту"}'
+  
+
+

@@ -1,0 +1,8 @@
+{
+  "api_port": 7077,
+  "max_workers": 128,
+  "auth_token": "cybra-secret-token",
+  "history_size": 512,
+  "auto_restart": true,
+  "restart_delay": 1
+}

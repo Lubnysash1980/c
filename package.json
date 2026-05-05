@@ -1,0 +1,35 @@
+{
+  "name": "cybra-game-bot",
+  "version": "2.0.0",
+  "description": "Cybra Game Bot with Parliament Integration",
+  "main": "bot_integration.js",
+  "scripts": {
+    "start": "node bot_integration.js",
+    "dev": "nodemon bot_integration.js",
+    "pm2": "pm2 start bot_integration.js --name cybra-bot",
+    "test": "jest"
+  },
+  "dependencies": {
+    "axios": "^1.15.2",
+    "cors": "^2.8.6",
+    "express": "^4.22.1",
+    "ws": "^8.20.0"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "nodemon": "^3.0.0"
+  },
+  "keywords": [
+    "cybra",
+    "game",
+    "bot",
+    "ai",
+    "parliament"
+  ],
+  "author": "Cybra AI",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lubnysash1980/cybra-game-bot.git"
+  }
+}

@@ -1,0 +1,108 @@
+    <!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Cybra Web Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  </head>
+  <body class="bg-light">
+    <nav class="navbar navbar-dark bg-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">Cybra Panel</a>
+        <span id="tokenBadge" class="badge bg-info">no token</span>
+      </div>
+    </nav>
+    <div class="container py-4">
+      <div class="row">
+        <div class="col-md-4">
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5>Auth</h5>
+              <div class="mb-2">
+                <input id="apiKey" class="form-control" placeholder="Enter platform API key"/>
+              </div>
+              <button id="btnGetToken" class="btn btn-primary">Get JWT Token</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <h5>Modules</h5>
+              <input id="modName" class="form-control mb-2" placeholder="module name"/>
+              <button id="btnStart" class="btn btn-success w-100 mb-2">Start Module</button>
+              <button id="btnStop" class="btn btn-danger w-100">Stop by PID</button>
+              <input id="pidInput" class="form-control mt-2" placeholder="pid to stop"/>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-8">
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5>Processes</h5>
+              <pre id="procList" style="height:200px; overflow:auto;"></pre>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <h5>Logs</h5>
+              <select id="logFiles" class="form-select mb-2"></select>
+              <pre id="logTail" style="height:200px; overflow:auto; background:#111; color:#0f0; padding:8px;"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+    let token = '';
+    document.getElementById('btnGetToken').onclick = async ()=>{
+      const key = document.getElementById('apiKey').value;
+      const res = await fetch('/api/token', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({key})});
+      const j = await res.json();
+      if(j.ok){ token = j.token; document.getElementById('tokenBadge').innerText = 'token set'; }
+      else alert('bad key');
+    };
+    async function refreshProcs(){
+      if(!token) return;
+      const res = await fetch('/api/status', {headers:{'Authorization':'Bearer '+token}});
+      if(res.status==200){
+        const j = await res.json();
+        const p = j.processes.map(x=>`${x.pid} ${x.name} cpu:${x.cpu_percent}% mem:${x.memory_percent}%`).join('\n');
+        document.getElementById('procList').innerText = p;
+      }
+    }
+    document.getElementById('btnStart').onclick = async ()=>{
+      const name = document.getElementById('modName').value;
+      const res = await fetch('/api/start_module', {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body: JSON.stringify({name})});
+      const j = await res.json();
+      alert(JSON.stringify(j));
+    };
+    document.getElementById('btnStop').onclick = async ()=>{
+      const pid = document.getElementById('pidInput').value;
+      const res = await fetch('/api/stop_module', {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body: JSON.stringify({pid})});
+      const j = await res.json();
+      alert(JSON.stringify(j));
+    };
+    async function refreshLogs(){
+      if(!token) return;
+      const res = await fetch('/api/logs', {headers:{'Authorization':'Bearer '+token}});
+      if(res.status==200){
+        const j = await res.json();
+        const sel = document.getElementById('logFiles');
+        sel.innerHTML = '';
+        j.logs.forEach(f=>{
+          const opt = document.createElement('option'); opt.value=f; opt.text = f; sel.appendChild(opt);
+        });
+        if(sel.options.length>0){
+          const f = sel.options[0].value;
+          sel.value = f;
+          const r = await fetch('/api/logtail?file='+encodeURIComponent(f)+'&lines=200', {headers:{'Authorization':'Bearer '+token}});
+          const jj = await r.json();
+          document.getElementById('logTail').innerText = jj.tail;
+        }
+      }
+    }
+    setInterval(refreshProcs,3000);
+    setInterval(refreshLogs,5000);
+    </script>
+  </body>
+</html>

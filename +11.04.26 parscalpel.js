@@ -1,0 +1,1 @@
+<html><head><meta content="text/html; charset=UTF-8" http-equiv="content-type"><title>Gmail – ошибка загрузки</title></head><body>Из соображений безопасности в Gmail нельзя использовать файлы такого типа, поскольку это нарушает правила Google в отношении исполняемых файлов и архивов.</body></html>

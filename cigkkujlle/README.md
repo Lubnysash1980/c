@@ -1,0 +1,1 @@
+Full Cybra AI platform with modules, Flask UI, RCS server and agent, launcher, auto-reload, and SHA-512 audit.

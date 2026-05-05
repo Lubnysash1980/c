@@ -1,0 +1,8 @@
+{
+  "api_port": 8443,
+  "auth_token": "cybra-secret-token",
+  "jwt_secret": "cybra-jwt-secret",
+  "use_https": false,
+  "certfile": "data/certs/cert.pem",
+  "keyfile": "data/certs/key.pem"
+}

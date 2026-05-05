@@ -1,0 +1,4 @@
+Flask>=2.0
+watchdog>=2.0
+# nfcpy optional - included as comment. Uncomment to attempt to install.
+# nfcpy>=1.0.4

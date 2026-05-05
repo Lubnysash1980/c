@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <title>Кіберпарламент — KyberPay</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 24px; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; max-width: 900px; }
+    .row { margin: 8px 0; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    input,button,select,textarea { padding:8px; border-radius:8px; border:1px solid #aaa; }
+    input[type="number"]{ width:160px; }
+    img { max-width: 320px; border: 1px solid #eee; border-radius: 8px; }
+    code { background:#f7f7f7; padding:2px 4px; border-radius: 4px; }
+    .ok { color: green; } .err{ color:#b00020; }
+  </style>
+</head>
+<body>
+  <h2>Кіберпарламент — KyberPay</h2>
+  <div class="card">
+    <div class="row">
+      <label>Backend URL: <input id="server" type="text" value="http://127.0.0.1:8093"></label>
+    </div>
+    <h3>1) Створити пропозицію</h3>
+    <div class="row">
+      <label>Сума: <input id="amount" type="number" min="1" max="1000000" step="1" value="1000"></label>
+      <label>Device hash (опц.): <input id="devh" type="text" placeholder="sha256(...)"></label>
+    </div>
+    <div class="row"><textarea id="memo" rows="2" cols="60" placeholder="Призначення платежу"></textarea></div>
+    <div class="row"><button id="btnCreate">Створити</button><span id="createStatus"></span></div>
+    <h3>2) Перегляд / Голосування</h3>
+    <div class="row">
+      <label>Proposal ID: <input id="pid" type="text" placeholder="Pxxxx..."></label>
+      <button id="btnFetch">Оновити</button><span id="fetchStatus"></span>
+    </div>
+    <div id="propInfo" class="row" style="display:none;"></div>
+    <div class="row">
+      <label>Member: 
+        <select id="member"><option>alice</option><option>bob</option><option>charlie</option></select>
+      </label>
+      <button id="btnYes">YES</button><button id="btnNo">NO</button><span id="voteStatus"></span>
+    </div>
+    <h3>3) QR</h3>
+    <div id="qrBlock" class="row" style="display:none;">
+      <div><b>Session:</b> <code id="sess"></code></div>
+      <div><img id="qr" alt="QR"></div>
+    </div>
+  </div>
+<script>
+const $ = (id) => document.getElementById(id);
+async function createProposal() {
+  const server = $("server").value.trim();
+  const amount = parseInt($("amount").value,10);
+  const device_hash = $("devh").value.trim() || null;
+  const memo = $("memo").value.trim();
+  $("createStatus").textContent = "Створюю...";
+  const res = await fetch(server + "/parliament/proposal", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ amount, memo, device_hash }),
+  });
+  const j = await res.json();
+  if (res.ok) { $("pid").value = j.proposal_id; $("createStatus").innerHTML = "<span class='ok'>OK: "+j.proposal_id+"</span>"; }
+  else { $("createStatus").innerHTML = "<span class='err'>"+(j.detail||JSON.stringify(j))+"</span>"; }
+}
+async function fetchProposal() {
+  const server = $("server").value.trim();
+  const pid = $("pid").value.trim();
+  $("fetchStatus").textContent = "Читаю...";
+  const res = await fetch(server + "/parliament/proposal/" + encodeURIComponent(pid));
+  const j = await res.json();
+  if (res.ok) {
+    $("fetchStatus").innerHTML = "<span class='ok'>OK</span>";
+    $("propInfo").style.display="block"; $("propInfo").innerHTML = "<pre>"+ JSON.stringify(j,null,2) +"</pre>";
+    if (j.status==="approved" && j.session) {
+      $("sess").textContent = j.session;
+      $("qr").src = server + "/qr/" + encodeURIComponent(j.session) + "/png";
+      $("qrBlock").style.display="block";
+    }
+  } else { $("fetchStatus").innerHTML = "<span class='err'>"+(j.detail||JSON.stringify(j))+"</span>"; }
+}
+async function vote(v) {
+  const server = $("server").value.trim();
+  const pid = $("pid").value.trim();
+  const member = $("member").value;
+  $("voteStatus").textContent = "Голосую...";
+  const res = await fetch(server + "/parliament/vote", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ proposal_id: pid, member, vote: v }),
+  });
+  const j = await res.json();
+  if (res.ok) { $("voteStatus").innerHTML = "<span class='ok'>OK</span>"; await fetchProposal(); }
+  else { $("voteStatus").innerHTML = "<span class='err'>"+(j.detail||JSON.stringify(j))+"</span>"; }
+}
+$("btnCreate").addEventListener("click", createProposal);
+$("btnFetch").addEventListener("click", fetchProposal);
+$("btnYes").addEventListener("click", () => vote(true));
+$("btnNo").addEventListener("click", () => vote(false));
+</script>
+</body>
+</html>

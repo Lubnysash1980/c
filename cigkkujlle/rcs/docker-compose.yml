@@ -1,0 +1,6 @@
+version: '3'
+services:
+  rcs_server:
+    build: ./rcs
+    ports:
+      - "5600:5600"

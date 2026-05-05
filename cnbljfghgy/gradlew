@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+# Minimal gradle wrapper script - requires gradle/wrapper/gradle-wrapper.jar to be present.
+DIR=$(cd "$(dirname "$0")" && pwd)
+JAVA=java
+if [ -z "$JAVA_HOME" ]; then
+  echo "Warning: JAVA_HOME not set, using system java"
+fi
+exec "$JAVA" -jar "$DIR/gradle/wrapper/gradle-wrapper.jar" "$@"
